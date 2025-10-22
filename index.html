@@ -1,481 +1,504 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-g">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobility Cost Calculator</title>
+    <title>Advanced Mobility Cost Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f4f7f6;
+            background-color: #f1f5f9; /* slate-100 */
         }
+        /* Custom card styling */
         .card {
             background-color: #ffffff;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem; /* 12px */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0; /* slate-200 */
         }
+        /* Custom input group styling */
         .input-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
         }
         .input-group label {
             display: block;
-            font-size: 0.875rem;
+            font-size: 0.875rem; /* 14px */
             font-weight: 500;
-            color: #374151;
-            margin-bottom: 0.25rem;
+            color: #334155; /* slate-700 */
+            margin-bottom: 0.375rem; /* 6px */
         }
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
-            padding: 0.5rem 0.75rem;
-            border-radius: 0.375rem;
-            border: 1px solid #d1d5db;
+            padding: 0.625rem 0.75rem; /* 10px 12px */
+            border-radius: 0.5rem; /* 8px */
+            border: 1px solid #cbd5e1; /* slate-300 */
             transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
-        .input-group input:focus {
+        .input-group input:focus, .input-group select:focus {
             outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+            border-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
         .input-group-comment {
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin-top: 0.25rem;
+            font-size: 0.75rem; /* 12px */
+            color: #64748b; /* slate-500 */
+            margin-top: 0.375rem; /* 6px */
         }
+        /* Custom tab styling */
         .tab-btn {
-            padding: 0.75rem 1rem;
+            padding: 0.625rem 0.5rem;
             font-weight: 600;
-            border-radius: 0.5rem;
+            border-radius: 0.5rem; /* 8px */
             cursor: pointer;
             transition: all 0.2s;
             border: 2px solid transparent;
+            font-size: 0.875rem;
+            flex: 1;
+            text-align: center;
         }
         .tab-btn-active {
             background-color: #ffffff;
-            color: #2563eb;
+            color: #2563eb; /* blue-600 */
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-color: #bfdbfe;
+            border-color: #bfdbfe; /* blue-200 */
         }
         .tab-btn-inactive {
             background-color: transparent;
-            color: #4b5563;
+            color: #475569; /* slate-600 */
         }
         .tab-content {
             display: none;
+            padding-top: 1.5rem;
         }
         .tab-content-active {
             display: block;
         }
+        /* Primary button */
         .btn-primary {
             width: 100%;
-            padding: 0.75rem;
-            font-size: 1rem;
-            font-weight: 600;
+            padding: 0.875rem;
+            font-size: 1.125rem; /* 18px */
+            font-weight: 700;
             color: #ffffff;
-            background-color: #2563eb;
-            border-radius: 0.5rem;
-            transition: background-color 0.2s;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-radius: 0.5rem; /* 8px */
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
         .btn-primary:hover {
-            background-color: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
         }
-        .result-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            overflow: hidden;
-        }
-        .result-header {
-            background-color: #f9fafb;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        .result-header h3 {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #111827;
-        }
-        .result-body {
-            padding: 1rem;
-        }
-        .result-body p {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.875rem;
-            color: #374151;
-            padding: 0.25rem 0;
-        }
-        .result-body p span:first-child {
-            font-weight: 500;
-        }
-        .result-body p span:last-child {
-            font-weight: 600;
-            color: #1f2937;
-        }
-        .winner-card {
-            border-radius: 0.5rem;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .winner-card.buy { background-color: #e0f2fe; border: 1px solid #bae6fd; }
-        .winner-card.buy .winner-text { color: #0c4a6e; }
-        .winner-card.rent { background-color: #e0fdf4; border: 1px solid #a7f3d0; }
-        .winner-card.rent .winner-text { color: #065f46; }
-        .winner-card.hybrid { background-color: #fefce8; border: 1px solid #fef08a; }
-        .winner-card.hybrid .winner-text { color: #854d0e; }
-        
-        .winner-card h2 {
-            font-size: 1.125rem;
-            font-weight: 700;
-        }
-        .winner-card p {
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-        }
-
-        /* Responsive sticky columns */
+        /* Sticky columns for large screens */
         @media (min-width: 1024px) {
             .sticky-col {
                 position: sticky;
-                top: 2rem;
+                top: 1.5rem;
                 align-self: start;
+                max-height: calc(100vh - 3rem);
+                overflow-y: auto;
             }
+            /* Hide scrollbar for sticky cols */
+            .sticky-col::-webkit-scrollbar { display: none; }
+            .sticky-col { -ms-overflow-style: none; scrollbar-width: none; }
+        }
+        /* Accordion styling for methodology */
+        .accordion-btn {
+            background-color: #f8fafc; /* slate-50 */
+            border: 1px solid #e2e8f0; /* slate-200 */
+        }
+        .accordion-btn.open {
+            background-color: #eef2ff; /* indigo-50 */
+            border-bottom-color: transparent;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            border: 1px solid #e2e8f0;
+            border-top: 0;
+        }
+        .accordion-content.open {
+            max-height: 1000px; /* arbitrary high value */
+            transition: max-height 0.5s ease-in;
         }
     </style>
 </head>
-<body class="bg-gray-100">
+<body>
 
-    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+    <div class="container mx-auto p-4 md:p-6 max-w-gxl">
         
-        <!-- Header -->
-        <header class="text-center mb-10">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">
-                Personal Mobility Cost Calculator
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-800">
+                Advanced Mobility Cost Calculator
             </h1>
-            <p class="text-lg text-gray-600 mt-2">
-                A detailed financial comparison for Abu Dhabi
+            <p class="text-lg text-slate-600 mt-2">
+                A comprehensive financial comparison of vehicle ownership models.
             </p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            <!-- Column 1: Global Inputs -->
-            <div class="lg:col-span-1 sticky-col">
+            <div class="lg:col-span-1 sticky-col space-y-6">
+
                 <div class="card p-6">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-4 border-b pb-2">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-5 border-b pb-3 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2 text-blue-600"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.75 7.125a.75.75 0 011.06 0l8.94 8.94a.75.75 0 11-1.06 1.06L4.75 8.185a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
                         Global Assumptions
                     </h2>
-                    
-                    <div class="input-group">
-                        <label for="period">Analysis Period (Years)</label>
-                        <input type="number" id="period" value="3" step="1" min="1">
-                        <p class="input-group-comment">How many years to forecast?</p>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="fuelPrice">Fuel Price (AED / litre)</label>
-                        <input type="number" id="fuelPrice" value="2.66" step="0.01">
-                        <p class="input-group-comment">e.g., Special 95</p>
-                    </div>
-
-                    <h2 class="text-xl font-semibold text-gray-900 mb-4 mt-6 border-b pb-2">
-                        Your Usage Pattern
-                    </h2>
-
-                    <div class="input-group">
-                        <label for="commuteKm">Daily Commute (Round Trip km)</label>
-                        <input type="number" id="commuteKm" value="50">
-                    </div>
-
-                    <div class="input-group">
-                        <label for="commuteDays">Commute Days (per week)</label>
-                        <input type="number" id="commuteDays" value="5">
-                    </div>
-
-                    <div class="input-group">
-                        <label for="weekendKm">Weekend Driving (km / week)</label>
-                        <input type="number" id="weekendKm" value="150">
-                    </div>
-
-                    <div class="input-group">
-                        <label for="roadTripKm">Yearly Road Trips (Total km)</label>
-                        <input type="number" id="roadTripKm" value="2000">
-                    </div>
-
-                    <div class="input-group">
-                        <label for="roadTripDays">Yearly Road Trips (Total Days)</label>
-                        <input type="number" id="roadTripDays" value="10">
-                        <p class="input-group-comment">Days you'll need a short-term rental.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="input-group">
+                            <label for="period">Analysis Period (Years)</label>
+                            <input type="number" id="period" value="5" step="1" min="1">
+                        </div>
+                        <div class="input-group">
+                            <label for="currency">Currency Symbol</label>
+                            <input type="text" id="currency" value="AED">
+                        </div>
+                        <div class="input-group">
+                            <label for="inflation">Annual Inflation (%)</label>
+                            <input type="number" id="inflation" value="2.0" step="0.1">
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Column 2: Model Inputs (Tabs) -->
-            <div class="lg:col-span-1">
+                <div class="card p-6">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-5 border-b pb-3 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2 text-blue-600"><path d="M7 3.5A1.5 1.5 0 018.5 2h3A1.5 1.5 0 0113 3.5v1.586a1.5 1.5 0 01-.44 1.06l-1.72 1.72a.75.75 0 00-.22.53v2.11a.75.75 0 00.22.53l1.72 1.72a1.5 1.5 0 01.44 1.06V16.5a1.5 1.5 0 01-1.5 1.5h-3A1.5 1.5 0 017 16.5v-1.586a1.5 1.5 0 01.44-1.06l1.72-1.72a.75.75 0 00.22-.53V9.62a.75.75 0 00-.22-.53L7.44 7.37A1.5 1.5 0 017 6.31V3.5zM8.5 3.5v2.81a.75.75 0 00.22.53l1.72 1.72v.94a1.5 1.5 0 01-.44 1.06L8.28 12.28a.75.75 0 00-.22.53v2.81c0 .135.053.26.146.354A.5.5 0 008.5 16h3a.5.5 0 00.354-.146.5.5 0 00.146-.354v-2.81a.75.75 0 00-.22-.53l-1.72-1.72a1.5 1.5 0 01-.44-1.06V9.62l1.72-1.72a.75.75 0 00.22-.53V3.5a.5.5 0 00-.146-.354A.5.5 0 0011.5 3h-3a.5.5 0 00-.354.146A.5.5 0 008.5 3.5z" /></svg>
+                        Your Usage Pattern
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+                        <div class="input-group">
+                            <label for="commuteKm">Daily Commute (Round Trip km)</label>
+                            <input type="number" id="commuteKm" value="50">
+                        </div>
+                        <div class="input-group">
+                            <label for="commuteDays">Commute Days (per week)</label>
+                            <input type="number" id="commuteDays" value="5">
+                        </div>
+                        <div class="input-group">
+                            <label for="weekendKm">Weekend Driving (km / week)</label>
+                            <input type="number" id="weekendKm" value="150">
+                        </div>
+                        <div class="input-group">
+                            <label for="roadTripKm">Yearly Road Trips (Total km)</label>
+                            <input type="number" id="roadTripKm" value="2000">
+                        </div>
+                        <div class="input-group">
+                            <label for="roadTripDays">Yearly Road Trips (Total Days)</label>
+                            <input type="number" id="roadTripDays" value="10">
+                            <p class="input-group-comment">Days you'll need a short-term rental.</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="card p-4 sm:p-6">
-                    <!-- Tab Buttons -->
-                    <div class="flex space-x-2 bg-gray-100 p-2 rounded-lg mb-6">
-                        <button id="btn-buy" class="tab-btn tab-btn-active flex-1">Buy</button>
-                        <button id="btn-rent" class="tab-btn tab-btn-inactive flex-1">Rent</button>
-                        <button id="btn-hybrid" class="tab-btn tab-btn-inactive flex-1">Hybrid</button>
+                    <div class="flex flex-wrap gap-2 bg-slate-100 p-2 rounded-lg mb-6">
+                        <button id="btn-buy-ice" class="tab-btn tab-btn-active">Buy (ICE)</button>
+                        <button id="btn-buy-ev" class="tab-btn tab-btn-inactive">Buy (EV)</button>
+                        <button id="btn-buy-phev" class="tab-btn tab-btn-inactive">Buy (PHEV)</button>
+                        <button id="btn-rent" class="tab-btn tab-btn-inactive">Rent</button>
+                        <button id="btn-hybrid" class="tab-btn tab-btn-inactive">Hybrid</button>
                     </div>
 
-                    <!-- Tab Content -->
                     <div>
-                        <!-- Buy Tab -->
-                        <div id="tab-buy" class="tab-content tab-content-active">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Capital & Financing</h3>
-                            <div class="input-group">
-                                <label for="buyPrice">Vehicle Purchase Price (AED)</label>
-                                <input type="number" id="buyPrice" value="60000">
+                        <div id="tab-buy-ice" class="tab-content tab-content-active space-y-4">
+                            <h3 class="text-xl font-semibold text-slate-800">Buy Model (Internal Combustion)</h3>
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="ice_price">Vehicle Purchase Price</label><input type="number" id="ice_price" value="80000"></div>
+                                <div class="input-group"><label for="ice_downPayment">Down Payment (%)</label><input type="number" id="ice_downPayment" value="20"></div>
+                                <div class="input-group"><label for="ice_interest">Loan Interest Rate (%)</label><input type="number" id="ice_interest" value="4.0" step="0.01"></div>
+                                <div class="input-group"><label for="ice_tenure">Loan Tenure (Months)</label><input type="number" id="ice_tenure" value="60" step="12"></div>
                             </div>
-                            <div class="input-group">
-                                <label for="buyDownPayment">Down Payment (%)</label>
-                                <input type="number" id="buyDownPayment" value="20">
-                                <p class="input-group-comment">Min 20% as per UAE regulations.</p>
+                            <hr class="my-4">
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="ice_fuelEfficiency">Fuel Efficiency (km / litre)</label><input type="number" id="ice_fuelEfficiency" value="14"></div>
+                                <div class="input-group"><label for="ice_fuelPrice">Fuel Price (per litre)</label><input type="number" id="ice_fuelPrice" value="2.80" step="0.01"></div>
+                                <div class="input-group"><label for="ice_insurance">Annual Insurance (% of car value)</label><input type="number" id="ice_insurance" value="2.5" step="0.01"></div>
+                                <div class="input-group"><label for="ice_maintenance">Annual Maintenance (Year 1)</label><input type="number" id="ice_maintenance" value="1200"></div>
                             </div>
-                            <div class="input-group">
-                                <label for="buyInterest">Loan Interest Rate (Reducing %)</label>
-                                <input type="number" id="buyInterest" value="4.10" step="0.01">
+                            <hr class="my-4">
+                             <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="ice_parking">Annual Parking Costs</label><input type="number" id="ice_parking" value="1500"></div>
+                                <div class="input-group"><label for="ice_tolls">Commute Tolls (per round trip)</label><input type="number" id="ice_tolls" value="8"></div>
+                                <div class="input-group"><label for="ice_regFees">Initial Registration / Fees</label><input type="number" id="ice_regFees" value="1000"></div>
+                                <div class="input-group"><label for="ice_regRenewal">Annual Renewal / Inspection</label><input type="number" id="ice_regRenewal" value="500"></div>
                             </div>
-                            <div class="input-group">
-                                <label for="buyTenure">Loan Tenure (Months)</label>
-                                <input type="number" id="buyTenure" value="36" step="12">
-                            </div>
-
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3 mt-6">Operations & Maintenance</h3>
-                            <div class="input-group">
-                                <label for="buyFuelEfficiency">Fuel Efficiency (km / litre)</label>
-                                <input type="number" id="buyFuelEfficiency" value="14">
-                            </div>
-                            <div class="input-group">
-                                <label for="buyInsurance">Annual Insurance (% of car value)</label>
-                                <input type="number" id="buyInsurance" value="2.35" step="0.01">
-                            </div>
-                            <div class="input-group">
-                                <label for="buyMaintenance">Annual Maintenance Budget (AED)</label>
-                                <input type="number" id="buyMaintenance" value="1000">
-                            </div>
-                            <div class="input-group">
-                                <label for="buyRepairs">Annual Non-Routine Repairs (AED)</label>
-                                <input type="number" id="buyRepairs" value="500">
-                            </div>
-
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3 mt-6">Parking & Tolls</h3>
-                            <div class="input-group">
-                                <label for="buyParkingResidential">Annual Residential Parking (AED)</label>
-                                <input type="number" id="buyParkingResidential" value="0">
-                            </div>
-                            <div class="input-group">
-                                <label for="buyParkingOffice">Daily Office Parking (AED)</label>
-                                <input type="number" id="buyParkingOffice" value="20">
-                            </div>
-                            <div class="input-group">
-                                <label for="buyParkingAdhoc">Ad-hoc Parking (AED / month)</label>
-                                <input type="number" id="buyParkingAdhoc" value="100">
-                            </div>
-                            <div class="input-group">
-                                <label for="buyTolls">Daily DARB Toll Trips (Peak Hours)</label>
-                                <input type="number" id="buyTolls" value="2">
-                                <p class="input-group-comment">AED 4 per trip.</p>
-                            </div>
-
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3 mt-6">Depreciation</h3>
-                            <div class="input-group">
-                                <label for="buyDepY1">Year 1 Depreciation (%)</label>
-                                <input type="number" id="buyDepY1" value="25">
-                            </div>
-                            <div class="input-group">
-                                <label for="buyDepSub">Subsequent Years Dep. (%)</label>
-                                <input type="number" id="buyDepSub" value="15">
+                            <hr class="my-4">
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="ice_depY1">Year 1 Depreciation (%)</label><input type="number" id="ice_depY1" value="20"></div>
+                                <div class="input-group"><label for="ice_depSub">Subsequent Years Dep. (%)</label><input type="number" id="ice_depSub" value="15"></div>
                             </div>
                         </div>
 
-                        <!-- Rent Tab -->
-                        <div id="tab-rent" class="tab-content">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Rental Costs</h3>
-                            <div class="input-group">
-                                <label for="rentMonthlyFee">Monthly Rental Fee (AED)</label>
-                                <input type="number" id="rentMonthlyFee" value="1800">
-                                <p class="input-group-comment">Incl. maintenance & basic insurance.</p>
+                        <div id="tab-buy-ev" class="tab-content space-y-4">
+                            <h3 class="text-xl font-semibold text-slate-800">Buy Model (Electric Vehicle)</h3>
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="ev_price">Vehicle Purchase Price</label><input type="number" id="ev_price" value="140000"></div>
+                                <div class="input-group"><label for="ev_downPayment">Down Payment (%)</label><input type="number" id="ev_downPayment" value="20"></div>
+                                <div class="input-group"><label for="ev_interest">Loan Interest Rate (%)</label><input type="number" id="ev_interest" value="4.0" step="0.01"></div>
+                                <div class="input-group"><label for="ev_tenure">Loan Tenure (Months)</label><input type="number" id="ev_tenure" value="60" step="12"></div>
                             </div>
-                            <div class="input-group">
-                                <label for="rentDeposit">Security Deposit (AED)</label>
-                                <input type="number" id="rentDeposit" value="2000">
-                                <p class="input-group-comment">Refundable, but counts as initial outlay.</p>
+                            <hr class="my-4">
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="ev_energyEfficiency">Energy Efficiency (kWh / 100km)</label><input type="number" id="ev_energyEfficiency" value="18"></div>
+                                <div class="input-group"><label for="ev_energyPrice">Electricity Price (per kWh)</label><input type="number" id="ev_energyPrice" value="0.32" step="0.01"></div>
+                                <div class="input-group"><label for="ev_chargerCost">Home Charger (One-time)</label><input type="number" id="ev_chargerCost" value="3000"></div>
+                                <div class="input-group"><label for="ev_insurance">Annual Insurance (% of car value)</label><input type="number" id="ev_insurance" value="2.75" step="0.01"></div>
+                                <div class="input-group"><label for="ev_maintenance">Annual Maintenance (Year 1)</label><input type="number" id="ev_maintenance" value="400"></div>
                             </div>
-                            <div class="input-group">
-                                <label for="rentMileageLimit">Monthly Mileage Limit (km)</label>
-                                <input type="number" id="rentMileageLimit" value="4500">
+                            <hr class="my-4">
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="ev_parking">Annual Parking Costs</label><input type="number" id="ev_parking" value="1500"></div>
+                                <div class="input-group"><label for="ev_tolls">Commute Tolls (per round trip)</label><input type="number" id="ev_tolls" value="0"></div>
+                                <div class="input-group"><label for="ev_regFees">Initial Registration / Fees</label><input type="number" id="ev_regFees" value="1000"></div>
+                                <div class="input-group"><label for="ev_regRenewal">Annual Renewal / Inspection</label><input type="number" id="ev_regRenewal" value="500"></div>
                             </div>
-                            <div class="input-group">
-                                <label for="rentExcessCost">Excess Mileage Cost (AED / km)</label>
-                                <input type="number" id="rentExcessCost" value="0.50" step="0.01">
+                            <hr class="my-4">
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="ev_depY1">Year 1 Depreciation (%)</label><input type="number" id="ev_depY1" value="25"></div>
+                                <div class="input-group"><label for="ev_depSub">Subsequent Years Dep. (%)</label><input type="number" id="ev_depSub" value="18"></div>
                             </div>
-
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3 mt-6">Renter's Variable Costs</h3>
-                            <div class="input-group">
-                                <label for="rentFuelEfficiency">Fuel Efficiency (km / litre)</label>
-                                <input type="number" id="rentFuelEfficiency" value="14">
+                        </div>
+                        
+                        <div id="tab-buy-phev" class="tab-content space-y-4">
+                            <h3 class="text-xl font-semibold text-slate-800">Buy Model (Plug-in Hybrid)</h3>
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="phev_price">Vehicle Purchase Price</label><input type="number" id="phev_price" value="120000"></div>
+                                <div class="input-group"><label for="phev_downPayment">Down Payment (%)</label><input type="number" id="phev_downPayment" value="20"></div>
+                                <div class="input-group"><label for="phev_interest">Loan Interest Rate (%)</label><input type="number" id="phev_interest" value="4.0" step="0.01"></div>
+                                <div class="input-group"><label for="phev_tenure">Loan Tenure (Months)</label><input type="number" id="phev_tenure" value="60" step="12"></div>
                             </div>
-                            <div class="input-group">
-                                <label for="rentParkingOffice">Daily Office Parking (AED)</label>
-                                <input type="number" id="rentParkingOffice" value="20">
+                            <hr class="my-4">
+                             <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="phev_electricPct">% of KM on Electric</label><input type="number" id="phev_electricPct" value="60"><p class="input-group-comment">e.g., if commute is all-electric.</p></div>
+                                <div class="input-group"><label for="phev_energyPrice">Electricity Price (per kWh)</label><input type="number" id="phev_energyPrice" value="0.32" step="0.01"></div>
+                                <div class="input-group"><label for="phev_energyEfficiency">Electric Efficiency (kWh / 100km)</label><input type="number" id="phev_energyEfficiency" value="22"></div>
+                                <div class="input-group"><label for="phev_fuelPrice">Fuel Price (per litre)</label><input type="number" id="phev_fuelPrice" value="2.80" step="0.01"></div>
+                                <div class="input-group"><label for="phev_fuelEfficiency">Fuel Efficiency (km / litre)</label><input type="number" id="phev_fuelEfficiency" value="16"></div>
+                                <div class="input-group"><label for="phev_chargerCost">Home Charger (One-time)</label><input type="number" id="phev_chargerCost" value="3000"></div>
+                                <div class="input-group"><label for="phev_insurance">Annual Insurance (% of car value)</label><input type="number" id="phev_insurance" value="2.6" step="0.01"></div>
+                                <div class="input-group"><label for="phev_maintenance">Annual Maintenance (Year 1)</label><input type="number" id="phev_maintenance" value="800"></div>
                             </div>
-                            <div class="input-group">
-                                <label for="rentParkingAdhoc">Ad-hoc Parking (AED / month)</label>
-                                <input type="number" id="rentParkingAdhoc" value="100">
+                            <hr class="my-4">
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="phev_parking">Annual Parking Costs</label><input type="number" id="phev_parking" value="1500"></div>
+                                <div class="input-group"><label for="phev_tolls">Commute Tolls (per round trip)</label><input type="number" id="phev_tolls" value="4"></div>
+                                <div class="input-group"><label for="phev_regFees">Initial Registration / Fees</label><input type="number" id="phev_regFees" value="1000"></div>
+                                <div class="input-group"><label for="phev_regRenewal">Annual Renewal / Inspection</label><input type="number" id="phev_regRenewal" value="500"></div>
                             </div>
-                            <div class="input-group">
-                                <label for="rentTolls">Daily DARB Toll Trips (Peak Hours)</label>
-                                <input type="number" id="rentTolls" value="2">
+                            <hr class="my-4">
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="phev_depY1">Year 1 Depreciation (%)</label><input type="number" id="phev_depY1" value="22"></div>
+                                <div class="input-group"><label for="phev_depSub">Subsequent Years Dep. (%)</label><input type="number" id="phev_depSub" value="16"></div>
                             </div>
                         </div>
 
-                        <!-- Hybrid Tab -->
-                        <div id="tab-hybrid" class="tab-content">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Ride-Sharing Costs</h3>
-                             <div class="input-group">
-                                <label for="hybridCommuteTripCost">Avg. Commute Trip Cost (AED, one-way)</label>
-                                <input type="number" id="hybridCommuteTripCost" value="35">
-                                <p class="input-group-comment">Cost for one leg of your daily commute.</p>
+                        <div id="tab-rent" class="tab-content space-y-4">
+                            <h3 class="text-xl font-semibold text-slate-800">Rent Model (Long-Term Lease)</h3>
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="rent_monthlyFee">Monthly Rental Fee (Year 1)</label><input type="number" id="rent_monthlyFee" value="1800"><p class="input-group-comment">Incl. maintenance & basic insurance.</p></div>
+                                <div class="input-group"><label for="rent_deposit">Security Deposit (Refundable)</label><input type="number" id="rent_deposit" value="2000"></div>
+                                <div class="input-group"><label for="rent_mileageLimit">Monthly Mileage Limit (km)</label><input type="number" id="rent_mileageLimit" value="4000"></div>
+                                <div class="input-group"><label for="rent_excessCost">Excess Mileage Cost (per km)</label><input type="number" id="rent_excessCost" value="0.50" step="0.01"></div>
                             </div>
-                            <div class="input-group">
-                                <label for="hybridWeekendTrips">Weekend Trips (per week)</label>
-                                <input type="number" id="hybridWeekendTrips" value="4">
+                            <hr class="my-4">
+                            <h4 class="text-lg font-semibold text-slate-700">Renter's Variable Costs</h4>
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="rent_fuelEfficiency">Fuel Efficiency (km / litre)</label><input type="number" id="rent_fuelEfficiency" value="14"></div>
+                                <div class="input-group"><label for="rent_fuelPrice">Fuel Price (per litre)</label><input type="number" id="rent_fuelPrice" value="2.80" step="0.01"></div>
+                                <div class="input-group"><label for="rent_parking">Annual Parking Costs</label><input type="number" id="rent_parking" value="1500"></div>
+                                <div class="input-group"><label for="rent_tolls">Commute Tolls (per round trip)</label><input type="number" id="rent_tolls" value="8"></div>
                             </div>
-                            <div class="input-group">
-                                <label for="hybridWeekendTripCost">Avg. Weekend Trip Cost (AED)</label>
-                                <input type="number" id="hybridWeekendTripCost" value="25">
-                            </div>
-                            <div class="input-group">
-                                <label for="hybridAdhocTrips">Ad-hoc Trips (per month)</label>
-                                <input type="number" id="hybridAdhocTrips" value="8">
-                            </div>
-                             <div class="input-group">
-                                <label for="hybridAdhocTripCost">Avg. Ad-hoc Trip Cost (AED)</label>
-                                <input type="number" id="hybridAdhocTripCost" value="20">
-                            </div>
+                        </div>
 
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3 mt-6">Short-Term Rental (for Road Trips)</h3>
-                            <div class="input-group">
-                                <label for="hybridRentalRate">Daily Rental Rate (AED)</label>
-                                <input type="number" id="hybridRentalRate" value="75">
+                        <div id="tab-hybrid" class="tab-content space-y-4">
+                            <h3 class="text-xl font-semibold text-slate-800">Hybrid Model (Taxi + Rentals)</h3>
+                            <h4 class="text-lg font-semibold text-slate-700">Daily Ride-Sharing (Year 1)</h4>
+                            <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="hybrid_commuteCost">Avg. Commute Cost (one-way)</label><input type="number" id="hybrid_commuteCost" value="35"></div>
+                                <div class="input-group"><label for="hybrid_weekendCost">Avg. Weekend Trip Cost</label><input type="number" id="hybrid_weekendCost" value="30"></div>
+                                <div class="input-group"><label for="hybrid_weekendTrips">Weekend Trips (per week)</label><input type="number" id="hybrid_weekendTrips" value="4"></div>
                             </div>
-                            <div class="input-group">
-                                <label for="hybridRentalEfficiency">Rental Fuel Efficiency (km / litre)</label>
-                                <input type="number" id="hybridRentalEfficiency" value="15">
+                            <hr class="my-4">
+                            <h4 class="text-lg font-semibold text-slate-700">Short-Term Rental (for Road Trips)</h4>
+                             <div class="grid md:grid-cols-2 gap-x-4">
+                                <div class="input-group"><label for="hybrid_rentalRate">Daily Rental Rate (Year 1)</label><input type="number" id="hybrid_rentalRate" value="120"></div>
+                                <div class="input-group"><label for="hybrid_rentalEfficiency">Rental Fuel Efficiency (km / litre)</label><input type="number" id="hybrid_rentalEfficiency" value="15"></div>
+                                <div class="input-group"><label for="hybrid_rentalFuelPrice">Rental Fuel Price (per litre)</label><input type="number" id="hybrid_rentalFuelPrice" value="2.80" step="0.01"></div>
                             </div>
-                            <p class="text-sm text-gray-600">
-                                This model assumes <strong>zero</strong> costs for parking (office, residential, ad-hoc) or tolls during your regular commute, as these are covered by ride-sharing.
+                            <p class="text-sm text-slate-600 italic">
+                                This model assumes <strong>zero</strong> personal costs for parking, tolls, insurance, or maintenance. These are included in the ride-sharing/rental fees.
                             </p>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Column 3: Results -->
-            <div class="lg:col-span-1 sticky-col">
-                <div class="card p-6">
-                    <button id="calculateBtn" class="btn-primary">
-                        Calculate Comparison
-                    </button>
 
-                    <div id="results" class="mt-6 hidden">
-                        <!-- Winner Card -->
-                        <div id="winnerCard" class="winner-card">
-                            <h2 id="winnerText" class="winner-text"></h2>
-                            <p id="winnerReason" class="winner-text"></p>
+            <div class="lg:col-span-1 sticky-col space-y-6">
+
+                <button id="calculateBtn" class="btn-primary flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.082 5.597a.75.75 0 011.06 0l1.74 1.739a.75.75 0 11-1.06 1.061L8.602 7.177a.75.75 0 010-1.06zm.707 5.06a.75.75 0 010-1.06l1.74-1.74a.75.75 0 011.06 1.06L9.85 11.718a.75.75 0 01-1.06 0zM5.597 8.082a.75.75 0 011.06 0l1.177 1.178a.75.75 0 11-1.06 1.06L5.597 9.143a.75.75 0 010-1.061zM14.403 11.918a.75.75 0 01-1.06 0L12.166 10.74a.75.75 0 111.06-1.06l1.177 1.177a.75.75 0 010 1.061z" clip-rule="evenodd" />
+                    </svg>
+                    Calculate Comparison
+                </button>
+                
+                <div id="results" class="space-y-6 hidden">
+
+                    <div class="card p-5" id="winnerCard">
+                        <h2 class="text-lg font-semibold text-slate-600" id="winnerTitle">Recommendation</h2>
+                        <p class="text-3xl font-extrabold" id="winnerText"></p>
+                        <p class="text-md text-slate-700 mt-2" id="winnerReason"></p>
+                        <div class="mt-4 space-y-2">
+                            <div id="winnerPros" class="flex items-start"></div>
+                            <div id="winnerCons" class="flex items-start"></div>
                         </div>
+                    </div>
 
-                        <!-- Summary Table -->
-                        <h2 class="text-xl font-semibold text-gray-900 mb-3">
-                            Summary Comparison
-                        </h2>
-                        <div class="overflow-x-auto">
+                    <div class="card p-5">
+                         <h2 class="text-2xl font-bold text-slate-900 mb-4">Summary Comparison</h2>
+                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-sm">
-                                <thead class="bg-gray-50 text-xs text-gray-700 uppercase">
+                                <thead class="bg-slate-50 text-xs text-slate-600 uppercase">
                                     <tr>
-                                        <th class="px-4 py-2">Metric</th>
-                                        <th class="px-4 py-2">Buy</th>
-                                        <th class="px-4 py-2">Rent</th>
-                                        <th class="px-4 py-2">Hybrid</th>
+                                        <th class="px-4 py-3">Metric</th>
+                                        <th class="px-4 py-3 text-center">Buy (ICE)</th>
+                                        <th class="px-4 py-3 text-center">Buy (EV)</th>
+                                        <th class="px-4 py-3 text-center">Buy (PHEV)</th>
+                                        <th class="px-4 py-3 text-center">Rent</th>
+                                        <th class="px-4 py-3 text-center">Hybrid</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr class="border-b">
-                                        <td class="px-4 py-2 font-medium">Initial Outlay</td>
-                                        <td id="res-buy-initial" class="px-4 py-2"></td>
-                                        <td id="res-rent-initial" class="px-4 py-2"></td>
-                                        <td id="res-hybrid-initial" class="px-4 py-2"></td>
+                                <tbody class="text-slate-700">
+                                    <tr class="border-b border-slate-200">
+                                        <td class="px-4 py-3 font-semibold">Initial Outlay</td>
+                                        <td id="res-ice-initial" class="px-4 py-3 text-center font-medium"></td>
+                                        <td id="res-ev-initial" class="px-4 py-3 text-center font-medium"></td>
+                                        <td id="res-phev-initial" class="px-4 py-3 text-center font-medium"></td>
+                                        <td id="res-rent-initial" class="px-4 py-3 text-center font-medium"></td>
+                                        <td id="res-hybrid-initial" class="px-4 py-3 text-center font-medium"></td>
                                     </tr>
-                                    <tr class="border-b">
-                                        <td class="px-4 py-2 font-medium">Avg. Monthly Cost</td>
-                                        <td id="res-buy-monthly" class="px-4 py-2"></td>
-                                        <td id="res-rent-monthly" class="px-4 py-2"></td>
-                                        <td id="res-hybrid-monthly" class="px-4 py-2"></td>
+                                    <tr class="border-b border-slate-200">
+                                        <td class="px-4 py-3 font-semibold">Avg. Monthly Cost</td>
+                                        <td id="res-ice-monthly" class="px-4 py-3 text-center font-medium"></td>
+                                        <td id="res-ev-monthly" class="px-4 py-3 text-center font-medium"></td>
+                                        <td id="res-phev-monthly" class="px-4 py-3 text-center font-medium"></td>
+                                        <td id="res-rent-monthly" class="px-4 py-3 text-center font-medium"></td>
+                                        <td id="res-hybrid-monthly" class="px-4 py-3 text-center font-medium"></td>
                                     </tr>
-                                    <tr class="border-b">
-                                        <td class="px-4 py-2 font-medium">Total Cost (Net)</td>
-                                        <td id="res-buy-total" class="px-4 py-2 font-bold"></td>
-                                        <td id="res-rent-total" class="px-4 py-2 font-bold"></td>
-                                        <td id="res-hybrid-total" class="px-4 py-2 font-bold"></td>
+                                    <tr class="border-b border-slate-200 bg-slate-50">
+                                        <td class="px-4 py-3 font-semibold text-blue-600">Total Net Cost</td>
+                                        <td id="res-ice-total" class="px-4 py-3 text-center font-bold text-blue-700"></td>
+                                        <td id="res-ev-total" class="px-4 py-3 text-center font-bold text-blue-700"></td>
+                                        <td id="res-phev-total" class="px-4 py-3 text-center font-bold text-blue-700"></td>
+                                        <td id="res-rent-total" class="px-4 py-3 text-center font-bold text-blue-700"></td>
+                                        <td id="res-hybrid-total" class="px-4 py-3 text-center font-bold text-blue-700"></td>
                                     </tr>
-                                    <tr class="border-b">
-                                        <td class="px-4 py-2 font-medium">Resale Value</td>
-                                        <td id="res-buy-resale" class="px-4 py-2"></td>
-                                        <td class="px-4 py-2 text-gray-500">N/A</td>
-                                        <td class="px-4 py-2 text-gray-500">N/A</td>
+                                    <tr class="border-b border-slate-200">
+                                        <td class="px-4 py-3 font-semibold">Resale Value</td>
+                                        <td id="res-ice-resale" class="px-4 py-3 text-center font-medium"></td>
+                                        <td id="res-ev-resale" class="px-4 py-3 text-center font-medium"></td>
+                                        <td id="res-phev-resale" class="px-4 py-3 text-center font-medium"></td>
+                                        <td class="px-4 py-3 text-center text-slate-400">N/A</td>
+                                        <td class="px-4 py-3 text-center text-slate-400">N/A</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
+                    </div>
 
-                        <!-- Detailed Breakdowns -->
-                        <h2 class="text-xl font-semibold text-gray-900 mb-3 mt-6">
-                            Detailed Breakdowns
-                        </h2>
-                        <div id="details-container">
-                            <!-- Buy Details -->
-                            <div classclass="result-card">
-                                <div class="result-header"><h3>Buy Model</h3></div>
-                                <div class="result-body" id="buyDetails"></div>
-                            </div>
-                            <!-- Rent Details -->
-                            <div classclass="result-card">
-                                <div class="result-header"><h3>Rent Model</h3></div>
-                                <div class="result-body" id="rentDetails"></div>
-                            </div>
-                            <!-- Hybrid Details -->
-                            <div classclass="result-card">
-                                <div class="result-header"><h3>Hybrid Model</h3></div>
-                                <div class="result-body" id="hybridDetails"></div>
-                            </div>
+                    <div class="card p-5">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-5">Visual Comparison</h2>
+                        
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-800 mb-2">Total Net Cost Comparison</h3>
+                            <canvas id="totalCostChart"></canvas>
                         </div>
 
+                        <div class="mt-8">
+                            <h3 class="text-lg font-semibold text-slate-800 mb-2">Cost Breakdown Comparison</h3>
+                            <p class="text-sm text-slate-500 mb-3">Shows the components of your total cost (excluding resale value).</p>
+                            <canvas id="breakdownChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
-
         </div>
+
+        <div class="mt-10 max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-slate-800 text-center mb-6">
+                Calculation Methodology
+            </h2>
+            <div class="space-y-2">
+                <div class="accordion-item">
+                    <button class="accordion-btn w-full text-left p-4 rounded-t-lg font-semibold text-slate-700 flex justify-between items-center">
+                        Buy Models (ICE, EV, PHEV)
+                        <span class="text-xl text-slate-500">+</span>
+                    </button>
+                    <div class="accordion-content p-5 rounded-b-lg space-y-2 text-sm text-slate-600 bg-white">
+                        <p><strong>Initial Outlay:</strong> Down Payment + Initial Registration Fees + (EV/PHEV Only: Home Charger Cost)</p>
+                        <p><strong>Loan EMI:</strong> Calculated using the standard PMT formula: $EMI = P \times \frac{r(1+r)^n}{(1+r)^n - 1}$ where P = Loan Amount, r = Monthly Interest Rate, n = Loan Tenure.</p>
+                        <p><strong>Total Interest:</strong> (EMI &times; Tenure) - Loan Amount.</p>
+                        <p><strong>Depreciation:</strong> Calculated cumulatively. $Value_n = Price \times (1 - Dep_{Y1}) \times (1 - Dep_{Sub})^{n-1}$. Total Depreciation = Price - Resale Value.</p>
+                        <p><strong>Operating Costs (OPEX):</strong> Calculated annually and compounded by the global inflation rate.</p>
+                        <ul class="list-disc list-inside ml-4">
+                            <li><strong>Energy (ICE):</strong> (Total km / Efficiency) &times; Fuel Price</li>
+                            <li><strong>Energy (EV):</strong> (Total km / 100 &times; kWh/100km) &times; Energy Price</li>
+                            <li><strong>Energy (PHEV):</strong> (Total km &times; %Electric &times; ...EV_Formula) + (Total km &times; %Gas &times; ...ICE_Formula)</li>
+                            <li><strong>Other OPEX:</strong> Annual costs for Insurance, Maintenance, Parking, Tolls, and Renewals are summed up for each year, with inflation applied.</li>
+                        </ul>
+                        <p><strong>Total Net Cost:</strong> Total Depreciation + Total Interest Paid + Total Operating Costs + Initial Fees.</p>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <button class="accordion-btn w-full text-left p-4 font-semibold text-slate-700 flex justify-between items-center">
+                        Rent Model
+                        <span class="text-xl text-slate-500">+</span>
+                    </button>
+                    <div class="accordion-content p-5 rounded-b-lg space-y-2 text-sm text-slate-600 bg-white">
+                        <p><strong>Initial Outlay:</strong> Security Deposit (this is not a *cost* as it's refundable, but it is an initial cash-flow item).</p>
+                        <p><strong>Rental Fees:</strong> Monthly fee is compounded annually by the global inflation rate.</p>
+                        <p><strong>Overage Fees:</strong> (Avg. Monthly km - Mileage Limit) &times; Excess Cost &times; Total Months. This is only applied if Avg. Monthly km > Limit.</p>
+                        <p><strong>Operating Costs (OPEX):</strong> Renter is assumed to pay for Fuel, Parking, and Tolls. These are calculated based on usage and compounded by inflation.</p>
+                        <p><strong>Total Net Cost:</strong> Total Rental Fees + Total Overage Fees + Total Renter OPEX.</p>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <button class="accordion-btn w-full text-left p-4 rounded-b-lg font-semibold text-slate-700 flex justify-between items-center">
+                        Hybrid (Taxi + Rental) Model
+                        <span class="text-xl text-slate-500">+</span>
+                    </button>
+                    <div class="accordion-content p-5 rounded-b-lg space-y-2 text-sm text-slate-600 bg-white">
+                        <p><strong>Initial Outlay:</strong> $0.</p>
+                        <p><strong>Ride-Sharing Costs:</strong> (Commute Cost &times; 2 &times; Commute Days &times; 52) + (Weekend Trip Cost &times; Weekend Trips &times; 52). This annual total is compounded by inflation.</p>
+                        <p><strong>Short-Term Rental Costs:</strong> (Rental Days &times; Daily Rate) + (Rental km / Efficiency &times; Fuel Price). The Daily Rate is compounded by inflation annually.</p>
+                        <p><strong>Total Net Cost:</strong> Total Ride-Sharing Costs + Total Short-Term Rental Costs over the full period.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
-            // --- FIXED CONSTANTS (from report) ---
-            const DARB_TOLL_FEE = 4;
-            const LOAN_PROCESSING_FEE = 480; // Based on 1% of 48k loan
-            const INITIAL_REGISTRATION_FEE = 400;
-            const DARB_REGISTRATION_FEE = 100;
-            const ANNUAL_REGISTRATION_RENEWAL = 350;
-            const ANNUAL_INSPECTION_FEE = 170; // For cars > 3 yrs
-            
+            // --- GLOBAL CHART VARIABLES ---
+            let totalCostChart = null;
+            let breakdownChart = null;
+
             // --- DOM ELEMENTS ---
             const tabs = [
-                { btn: document.getElementById('btn-buy'), content: document.getElementById('tab-buy') },
+                { btn: document.getElementById('btn-buy-ice'), content: document.getElementById('tab-buy-ice') },
+                { btn: document.getElementById('btn-buy-ev'), content: document.getElementById('tab-buy-ev') },
+                { btn: document.getElementById('btn-buy-phev'), content: document.getElementById('tab-buy-phev') },
                 { btn: document.getElementById('btn-rent'), content: document.getElementById('tab-rent') },
                 { btn: document.getElementById('btn-hybrid'), content: document.getElementById('tab-hybrid') }
             ];
@@ -495,248 +518,420 @@
                     tab.content.classList.add('tab-content-active');
                 });
             });
+            
+            // --- ACCORDION LOGIC ---
+            document.querySelectorAll('.accordion-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    const isOpen = content.classList.contains('open');
+                    
+                    // Close all others
+                    document.querySelectorAll('.accordion-content').forEach(c => {
+                        c.classList.remove('open');
+                        c.previousElementSibling.classList.remove('open');
+                        c.previousElementSibling.querySelector('span').textContent = '+';
+                    });
+                    
+                    // Open clicked one
+                    if (!isOpen) {
+                        content.classList.add('open');
+                        button.classList.add('open');
+                        button.querySelector('span').textContent = '−';
+                    }
+                });
+            });
 
             // --- CALCULATION ---
             calculateBtn.addEventListener('click', runComparison);
 
             function getInputs() {
                 const inputs = {};
-                const allInputs = document.querySelectorAll('input[type="number"]');
+                const allInputs = document.querySelectorAll('input[type="number"], input[type="text"]');
                 allInputs.forEach(input => {
-                    inputs[input.id] = parseFloat(input.value) || 0;
+                    const value = input.type === 'number' ? (parseFloat(input.value) || 0) : input.value;
+                    inputs[input.id] = value;
                 });
                 return inputs;
             }
 
-            function runComparison() {
-                const i = getInputs(); // All inputs
-                
-                // --- Global Calcs ---
-                const totalMonths = i.period * 12;
-                const totalWeeks = i.period * 52;
-                
-                const totalCommuteKm = i.commuteKm * i.commuteDays * totalWeeks;
-                const totalWeekendKm = i.weekendKm * totalWeeks;
-                const totalRoadTripKm = i.roadTripKm * i.period;
-                const totalKm = totalCommuteKm + totalWeekendKm + totalRoadTripKm;
-                const totalAnnualKm = totalKm / i.period;
-                const monthlyAvgKm = totalKm / totalMonths;
-
-                // --- Calculate Each Model ---
-                const buyResult = calculateBuy(i, totalKm, totalMonths, totalWeeks);
-                const rentResult = calculateRent(i, totalKm, totalAnnualKm, totalMonths, totalWeeks);
-                const hybridResult = calculateHybrid(i, totalMonths, totalWeeks);
-
-                // --- Display Results ---
-                displayResults(buyResult, rentResult, hybridResult);
+            // Helper: EMI Calculator
+            function pmt(rate, nper, pv) {
+                if (rate === 0) return pv / nper;
+                const monthlyRate = rate / 100 / 12;
+                return (pv * monthlyRate * Math.pow(1 + monthlyRate, nper)) / (Math.pow(1 + monthlyRate, nper) - 1);
+            }
+            
+            // Helper: Currency Formatter
+            function formatCurrency(value, symbol) {
+                return new Intl.NumberFormat('en-US', { 
+                    style: 'currency', 
+                    currency: 'USD', // Dummy currency
+                    currencyDisplay: 'narrowSymbol',
+                    maximumFractionDigits: 0,
+                    minimumFractionDigits: 0,
+                }).format(value).replace('$', symbol + ' ');
             }
 
-            function calculateBuy(i, totalKm, totalMonths, totalWeeks) {
-                // 1. Initial Outlay (CAPEX)
-                const downPaymentAmount = i.buyPrice * (i.buyDownPayment / 100);
-                const initialOutlay = downPaymentAmount + LOAN_PROCESSING_FEE + INITIAL_REGISTRATION_FEE + DARB_REGISTRATION_FEE;
+            function runComparison() {
+                const i = getInputs(); // All inputs
+                const period = i.period;
+                const inflationRate = i.inflation / 100;
 
-                // 2. Financing
-                const loanAmount = i.buyPrice - downPaymentAmount;
-                const monthlyInterestRate = (i.buyInterest / 100) / 12;
-                let emi = 0;
-                if (monthlyInterestRate > 0) {
-                     emi = loanAmount * monthlyInterestRate * (Math.pow(1 + monthlyInterestRate, i.buyTenure)) / (Math.pow(1 + monthlyInterestRate, i.buyTenure) - 1);
-                } else if (loanAmount > 0 && i.buyTenure > 0) {
-                    emi = loanAmount / i.buyTenure;
+                // --- Global Usage Calcs ---
+                const totalCommuteKm = i.commuteKm * i.commuteDays * 52 * period;
+                const totalWeekendKm = i.weekendKm * 52 * period;
+                const totalRoadTripKm = i.roadTripKm * period;
+                const totalKm = totalCommuteKm + totalWeekendKm + totalRoadTripKm;
+                const totalAnnualKm = totalKm / period;
+                const monthlyAvgKm = totalKm / (period * 12);
+                
+                const usage = { totalKm, totalAnnualKm, monthlyAvgKm, period, inflationRate };
+                usage.commuteTripsPerYear = i.commuteDays * 52;
+                usage.roadTripDaysPerYear = i.roadTripDays;
+                usage.weekendTripsPerYear = i.hybrid_weekendTrips * 52;
+                
+                // --- Calculate Each Model ---
+                const results = [
+                    calculateBuy(i, usage, 'ice'),
+                    calculateBuy(i, usage, 'ev'),
+                    calculateBuy(i, usage, 'phev'),
+                    calculateRent(i, usage),
+                    calculateHybrid(i, usage)
+                ];
+
+                // --- Display Results ---
+                displayResults(results, i.currency);
+            }
+
+            function calculateBuy(i, u, type) {
+                const p = (val) => i[type + '_' + val]; // prefix helper
+                let breakdown = { depreciation: 0, interest: 0, energy: 0, opex: 0, fees: p('regFees') };
+
+                // 1. Initial Outlay & Financing
+                const price = p('price');
+                const downPaymentAmount = price * (p('downPayment') / 100);
+                const loanAmount = price - downPaymentAmount;
+                const tenure = p('tenure');
+                const emi = pmt(p('interest'), tenure, loanAmount);
+                const totalLoanPayments = emi * tenure;
+                const totalInterest = Math.max(0, totalLoanPayments - loanAmount);
+                
+                let initialOutlay = downPaymentAmount + p('regFees');
+                if (type === 'ev' || type === 'phev') {
+                    initialOutlay += p('chargerCost');
+                    breakdown.fees += p('chargerCost');
                 }
-                const totalMonthsOfPayment = Math.min(totalMonths, i.buyTenure);
-                const totalLoanPayments = emi * totalMonthsOfPayment;
-                const totalInterestPaid = (emi * i.buyTenure) - loanAmount; // Total interest over loan life
-                const interestPaidInPeriod = Math.max(0, (emi * totalMonthsOfPayment) - (loanAmount / i.buyTenure * totalMonthsOfPayment)); // Simplified
+                
+                breakdown.interest = totalInterest;
 
-                // 3. Depreciation & Resale
-                let resaleValue = i.buyPrice;
-                for (let year = 1; year <= i.period; year++) {
-                    const depRate = (year === 1) ? (i.buyDepY1 / 100) : (i.buyDepSub / 100);
+                // 2. Resale Value & Depreciation
+                let resaleValue = price;
+                for (let year = 1; year <= u.period; year++) {
+                    const depRate = (year === 1) ? (p('depY1') / 100) : (p('depSub') / 100);
                     resaleValue *= (1 - depRate);
                 }
-                const totalDepreciation = i.buyPrice - resaleValue;
-
-                // 4. Operational Costs (OPEX)
-                const totalFuelCost = (totalKm / i.buyFuelEfficiency) * i.fuelPrice;
+                const totalDepreciation = price - resaleValue;
+                breakdown.depreciation = totalDepreciation;
                 
-                const totalOfficeParking = i.buyParkingOffice * i.commuteDays * totalWeeks;
-                const totalAdhocParking = i.buyParkingAdhoc * totalMonths;
-                const totalResidentialParking = i.buyParkingResidential * i.period;
-                const totalParking = totalOfficeParking + totalAdhocParking + totalResidentialParking;
-
-                const totalTolls = i.buyTolls * i.commuteDays * totalWeeks * DARB_TOLL_FEE;
-                const totalMaintenance = (i.buyMaintenance + i.buyRepairs) * i.period;
+                // 3. Operating Costs (with inflation)
+                let totalOpex = 0;
+                let currentCarValue = price;
                 
-                let totalInsurance = 0;
-                let currentCarValue = i.buyPrice;
-                for (let year = 1; year <= i.period; year++) {
-                    totalInsurance += currentCarValue * (i.buyInsurance / 100);
-                    const depRate = (year === 1) ? (i.buyDepY1 / 100) : (i.buyDepSub / 100);
+                for (let year = 1; year <= u.period; year++) {
+                    const inflationMultiplier = Math.pow(1 + u.inflationRate, year - 1);
+                    
+                    // Energy Cost
+                    if (type === 'ice') {
+                        breakdown.energy += (u.totalAnnualKm / p('fuelEfficiency')) * p('fuelPrice') * inflationMultiplier;
+                    } else if (type === 'ev') {
+                        breakdown.energy += (u.totalAnnualKm / 100 * p('energyEfficiency')) * p('energyPrice') * inflationMultiplier;
+                    } else if (type === 'phev') {
+                        const electricKm = u.totalAnnualKm * (p('electricPct') / 100);
+                        const gasKm = u.totalAnnualKm * (1 - (p('electricPct') / 100));
+                        const electricCost = (electricKm / 100 * p('energyEfficiency')) * p('energyPrice');
+                        const gasCost = (gasKm / p('fuelEfficiency')) * p('fuelPrice');
+                        breakdown.energy += (electricCost + gasCost) * inflationMultiplier;
+                    }
+                    
+                    // Other OPEX
+                    const insuranceCost = (currentCarValue * (p('insurance') / 100)) * inflationMultiplier;
+                    const maintenanceCost = p('maintenance') * inflationMultiplier;
+                    const parkingCost = p('parking') * inflationMultiplier;
+                    const tollsCost = (p('tolls') * u.commuteTripsPerYear) * inflationMultiplier;
+                    const renewalCost = (year > 1) ? (p('regRenewal') * inflationMultiplier) : 0;
+                    
+                    const yearOpex = insuranceCost + maintenanceCost + parkingCost + tollsCost + renewalCost;
+                    breakdown.opex += yearOpex;
+                    
+                    // Update car value for next year's insurance
+                    const depRate = (year === 1) ? (p('depY1') / 100) : (p('depSub') / 100);
                     currentCarValue *= (1 - depRate);
                 }
-
-                let totalRenewals = 0;
-                if (i.period > 1) {
-                    totalRenewals += ANNUAL_REGISTRATION_RENEWAL * (i.period - 1);
-                }
-                if (i.period > 3) {
-                    totalRenewals += ANNUAL_INSPECTION_FEE * (i.period - 3);
-                }
-
-                const totalOpex = totalFuelCost + totalParking + totalTolls + totalMaintenance + totalInsurance + totalRenewals;
-
-                // 5. Total Cost of Ownership (TCO)
-                // TCO = Depreciation + Interest + OPEX + Initial Fees
-                const totalCost = totalDepreciation + interestPaidInPeriod + totalOpex + (LOAN_PROCESSING_FEE + INITIAL_REGISTRATION_FEE + DARB_REGISTRATION_FEE);
-                const avgMonthly = totalCost / totalMonths;
-
+                totalOpex = breakdown.energy + breakdown.opex;
+                
+                // 4. Total Cost
+                const totalCost = totalDepreciation + totalInterest + totalOpex + breakdown.fees - p('regFees'); // regFees is already in breakdown.fees
+                
                 return {
-                    name: "Buy",
+                    name: type.toUpperCase(),
                     initialOutlay: initialOutlay,
                     totalCost: totalCost,
-                    avgMonthly: avgMonthly,
+                    avgMonthly: totalCost / (u.period * 12),
                     resaleValue: resaleValue,
-                    breakdown: {
-                        "Initial Fees": LOAN_PROCESSING_FEE + INITIAL_REGISTRATION_FEE + DARB_REGISTRATION_FEE,
-                        "Depreciation": totalDepreciation,
-                        "Loan Interest": interestPaidInPeriod,
-                        "Fuel": totalFuelCost,
-                        "Parking": totalParking,
-                        "Tolls (DARB)": totalTolls,
-                        "Maintenance & Repairs": totalMaintenance,
-                        "Insurance": totalInsurance,
-                        "Renewals & Inspections": totalRenewals,
-                    }
+                    breakdown: breakdown
                 };
             }
 
-            function calculateRent(i, totalKm, totalAnnualKm, totalMonths, totalWeeks) {
-                // 1. Initial Outlay
-                const initialOutlay = i.rentDeposit; // Refundable, but still an outlay
-
-                // 2. Fixed Costs
-                const totalRentalFees = i.rentMonthlyFee * totalMonths;
-
-                // 3. Overage Costs
-                const monthlyAvgKm = totalAnnualKm / 12;
-                const excessKmPerMonth = Math.max(0, monthlyAvgKm - i.rentMileageLimit);
-                const totalExcessCost = (excessKmPerMonth * totalMonths) * i.rentExcessCost;
-
-                // 4. Renter's Variable Costs (OPEX)
-                const totalFuelCost = (totalKm / i.rentFuelEfficiency) * i.fuelPrice;
-                const totalOfficeParking = i.rentParkingOffice * i.commuteDays * totalWeeks;
-                const totalAdhocParking = i.rentParkingAdhoc * totalMonths;
-                const totalParking = totalOfficeParking + totalAdhocParking;
-                const totalTolls = i.rentTolls * i.commuteDays * totalWeeks * DARB_TOLL_FEE;
-
-                // 5. Total Cost of Renting (TCR)
-                // Deposit is returned, so not part of net cost.
-                const totalCost = totalRentalFees + totalExcessCost + totalFuelCost + totalParking + totalTolls;
-                const avgMonthly = totalCost / totalMonths;
+            function calculateRent(i, u) {
+                let breakdown = { fees: 0, energy: 0, opex: 0, overage: 0 };
+                
+                // 1. Rental Fees
+                for (let year = 1; year <= u.period; year++) {
+                    const inflationMultiplier = Math.pow(1 + u.inflationRate, year - 1);
+                    breakdown.fees += (i.rent_monthlyFee * 12) * inflationMultiplier;
+                }
+                
+                // 2. Overage
+                const excessKm = Math.max(0, u.monthlyAvgKm - i.rent_mileageLimit) * (u.period * 12);
+                breakdown.overage = excessKm * i.rent_excessCost;
+                
+                // 3. Renter OPEX
+                for (let year = 1; year <= u.period; year++) {
+                    const inflationMultiplier = Math.pow(1 + u.inflationRate, year - 1);
+                    breakdown.energy += (u.totalAnnualKm / i.rent_fuelEfficiency) * i.rent_fuelPrice * inflationMultiplier;
+                    
+                    const parkingCost = i.rent_parking * inflationMultiplier;
+                    const tollsCost = (i.rent_tolls * u.commuteTripsPerYear) * inflationMultiplier;
+                    breakdown.opex += parkingCost + tollsCost;
+                }
+                
+                const totalCost = breakdown.fees + breakdown.overage + breakdown.energy + breakdown.opex;
                 
                 return {
                     name: "Rent",
-                    initialOutlay: initialOutlay,
+                    initialOutlay: i.rent_deposit,
                     totalCost: totalCost,
-                    avgMonthly: avgMonthly,
+                    avgMonthly: totalCost / (u.period * 12),
                     resaleValue: 0,
-                    breakdown: {
-                        "Monthly Rental Fees": totalRentalFees,
-                        "Excess Mileage Fees": totalExcessCost,
-                        "Fuel": totalFuelCost,
-                        "Parking (Office & Ad-hoc)": totalParking,
-                        "Tolls (DARB)": totalTolls,
-                    }
+                    breakdown: breakdown
                 };
             }
 
-            function calculateHybrid(i, totalMonths, totalWeeks) {
-                // 1. Initial Outlay
-                const initialOutlay = 0;
-
-                // 2. Ride-Sharing Costs
-                const totalCommuteCost = i.hybridCommuteTripCost * 2 * i.commuteDays * totalWeeks;
-                const totalWeekendCost = i.hybridWeekendTripCost * i.hybridWeekendTrips * totalWeeks;
-                const totalAdhocCost = i.hybridAdhocTripCost * i.hybridAdhocTrips * totalMonths;
+            function calculateHybrid(i, u) {
+                let breakdown = { taxi: 0, rental: 0 };
                 
-                // 3. Short-Term Rental Costs
-                const totalRentalDays = i.roadTripDays * i.period;
-                const totalRentalCost = totalRentalDays * i.hybridRentalRate;
-                const totalRentalFuel = (i.roadTripKm * i.period / i.hybridRentalEfficiency) * i.fuelPrice;
-                const totalRoadTripCost = totalRentalCost + totalRentalFuel;
-                // Note: Assumes no tolls/parking on road trips, or it's part of the daily budget
-
-                // 4. Total Cost
-                const totalCost = totalCommuteCost + totalWeekendCost + totalAdhocCost + totalRoadTripCost;
-                const avgMonthly = totalCost / totalMonths;
-
+                for (let year = 1; year <= u.period; year++) {
+                    const inflationMultiplier = Math.pow(1 + u.inflationRate, year - 1);
+                    
+                    // Ride-sharing
+                    const commuteCost = (i.hybrid_commuteCost * 2 * u.commuteTripsPerYear) * inflationMultiplier;
+                    const weekendCost = (i.hybrid_weekendCost * u.weekendTripsPerYear) * inflationMultiplier;
+                    breakdown.taxi += commuteCost + weekendCost;
+                    
+                    // Short-term rental
+                    const rentalFee = (i.hybrid_rentalRate * u.roadTripDaysPerYear) * inflationMultiplier;
+                    const rentalKm = u.totalAnnualKm - (u.commuteTripsPerYear * i.commuteKm / u.period) - (u.weekendTripsPerYear * (i.weekendKm / 52) / u.period); // This logic is tricky, simplifying
+                    const rentalKmPerYear = i.roadTripKm; // From global
+                    const rentalFuel = (rentalKmPerYear / i.hybrid_rentalEfficiency) * i.hybrid_rentalFuelPrice * inflationMultiplier;
+                    breakdown.rental += rentalFee + rentalFuel;
+                }
+                
+                const totalCost = breakdown.taxi + breakdown.rental;
+                
                 return {
                     name: "Hybrid",
-                    initialOutlay: initialOutlay,
+                    initialOutlay: 0,
                     totalCost: totalCost,
-                    avgMonthly: avgMonthly,
+                    avgMonthly: totalCost / (u.period * 12),
                     resaleValue: 0,
-                    breakdown: {
-                        "Commute Ride-Sharing": totalCommuteCost,
-                        "Weekend Ride-Sharing": totalWeekendCost,
-                        "Ad-hoc Ride-Sharing": totalAdhocCost,
-                        "Short-Term Rental (Fees)": totalRentalCost,
-                        "Short-Term Rental (Fuel)": totalRentalFuel,
-                    }
+                    breakdown: breakdown
                 };
             }
 
-
-            function displayResults(buy, rent, hybrid) {
+            function displayResults(results, currency) {
                 // --- Find Winner ---
-                const models = [buy, rent, hybrid];
-                let winner = models.sort((a, b) => a.totalCost - b.totalCost)[0];
-
+                let winner = results.sort((a, b) => a.totalCost - b.totalCost)[0];
+                
+                // --- Set Winner Card ---
                 const winnerCard = document.getElementById('winnerCard');
-                winnerCard.className = `winner-card ${winner.name.toLowerCase()}`;
-                document.getElementById('winnerText').innerText = `Recommendation: ${winner.name} Model`;
-                document.getElementById('winnerReason').innerText = `This is your most cost-effective option with the lowest total net cost of ${formatCurrency(winner.totalCost)} over ${getInputs().period} years.`;
+                const winnerText = document.getElementById('winnerText');
+                const winnerReason = document.getElementById('winnerReason');
+                const winnerPros = document.getElementById('winnerPros');
+                const winnerCons = document.getElementById('winnerCons');
+                
+                // Color coding
+                const colors = {
+                    ICE: { bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-200' },
+                    EV: { bg: 'bg-green-50', text: 'text-green-800', border: 'border-green-200' },
+                    PHEV: { bg: 'bg-purple-50', text: 'text-purple-800', border: 'border-purple-200' },
+                    Rent: { bg: 'bg-yellow-50', text: 'text-yellow-800', border: 'border-yellow-200' },
+                    Hybrid: { bg: 'bg-indigo-50', text: 'text-indigo-800', border: 'border-indigo-200' }
+                };
+                const color = colors[winner.name] || colors['ICE'];
+                
+                winnerCard.className = card p-5 ${color.bg} border ${color.border};
+                winnerText.className = text-3xl font-extrabold ${color.text};
+                winnerText.innerText = The ${winner.name} Model;
+                winnerReason.innerText = This is your most cost-effective option with the lowest total net cost of ${formatCurrency(winner.totalCost, currency)} over ${getInputs().period} years.
+
+                // Dynamic Pros/Cons
+                let pros = ['Lowest total net cost.'];
+                let cons = [];
+                if (winner.initialOutlay > 5000) pros.push('Builds equity in an asset.');
+                if (winner.name === 'Hybrid') pros.push('Maximum flexibility, no maintenance.');
+                if (winner.name === 'Rent') pros.push('Low commitment, maintenance included.');
+                if (winner.name === 'EV') pros.push('Lowest running costs (fuel & maintenance).');
+                
+                if (winner.initialOutlay > 30000) cons.push('High initial outlay.');
+                if (winner.name === 'Hybrid' || winner.name === 'Rent') cons.push('No asset/equity built.');
+                if (winner.name === 'EV') cons.push('Dependent on charging infrastructure.');
+                if (winner.name.includes('Buy')) cons.push('Tied to a depreciating asset.');
+
+                winnerPros.innerHTML = <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2 text-green-600 flex-shrink-0"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+                                      <span class="text-slate-700 text-sm">${pros.join(' ')}</span>;
+                winnerCons.innerHTML = <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 mr-2 text-red-600 flex-shrink-0"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg>
+                                      <span class="text-slate-700 text-sm">${cons.join(' ')}</span>;
 
                 // --- Populate Summary Table ---
-                document.getElementById('res-buy-initial').innerText = formatCurrency(buy.initialOutlay);
-                document.getElementById('res-rent-initial').innerText = formatCurrency(rent.initialOutlay);
-                document.getElementById('res-hybrid-initial').innerText = formatCurrency(hybrid.initialOutlay);
-
-                document.getElementById('res-buy-monthly').innerText = formatCurrency(buy.avgMonthly);
-                document.getElementById('res-rent-monthly').innerText = formatCurrency(rent.avgMonthly);
-                document.getElementById('res-hybrid-monthly').innerText = formatCurrency(hybrid.avgMonthly);
-
-                document.getElementById('res-buy-total').innerText = formatCurrency(buy.totalCost);
-                document.getElementById('res-rent-total').innerText = formatCurrency(rent.totalCost);
-                document.getElementById('res-hybrid-total').innerText = formatCurrency(hybrid.totalCost);
-
-                document.getElementById('res-buy-resale').innerText = formatCurrency(buy.resaleValue);
-
-                // --- Populate Detailed Breakdowns ---
-                document.getElementById('buyDetails').innerHTML = generateBreakdownHtml(buy.breakdown);
-                document.getElementById('rentDetails').innerHTML = generateBreakdownHtml(rent.breakdown);
-                document.getElementById('hybridDetails').innerHTML = generateBreakdownHtml(hybrid.breakdown);
+                results.forEach(res => {
+                    const id = res.name.toLowerCase().replace('(', '-').replace(')', '');
+                    document.getElementById(res-${id}-initial).innerText = formatCurrency(res.initialOutlay, currency);
+                    document.getElementById(res-${id}-monthly).innerText = formatCurrency(res.avgMonthly, currency);
+                    document.getElementById(res-${id}-total).innerText = formatCurrency(res.totalCost, currency);
+                    if (document.getElementById(res-${id}-resale)) {
+                        document.getElementById(res-${id}-resale).innerText = formatCurrency(res.resaleValue, currency);
+                    }
+                });
+                
+                // --- Update Charts ---
+                updateCharts(results, currency);
 
                 resultsDiv.classList.remove('hidden');
             }
+            
+            function updateCharts(results, currency) {
+                const ctxTotal = document.getElementById('totalCostChart').getContext('2d');
+                const ctxBreakdown = document.getElementById('breakdownChart').getContext('2d');
 
-            function generateBreakdownHtml(breakdown) {
-                let html = '';
-                for (const key in breakdown) {
-                    html += `<p><span>${key}</span> <span>${formatCurrency(breakdown[key])}</span></p>`;
-                }
-                return html;
+                const labels = results.map(r => r.name);
+                const totalCostData = results.map(r => r.totalCost);
+                
+                const modelColors = {
+                    ICE: 'rgba(59, 130, 246, 0.8)',
+                    EV: 'rgba(34, 197, 94, 0.8)',
+                    PHEV: 'rgba(168, 85, 247, 0.8)',
+                    Rent: 'rgba(234, 179, 8, 0.8)',
+                    Hybrid: 'rgba(99, 102, 241, 0.8)'
+                };
+                
+                const modelBorders = {
+                    ICE: 'rgb(59, 130, 246)',
+                    EV: 'rgb(34, 197, 94)',
+                    PHEV: 'rgb(168, 85, 247)',
+                    Rent: 'rgb(234, 179, 8)',
+                    Hybrid: 'rgb(99, 102, 241)'
+                };
+
+                // 1. Total Cost Bar Chart
+                if (totalCostChart) totalCostChart.destroy();
+                totalCostChart = new Chart(ctxTotal, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Total Net Cost',
+                            data: totalCostData,
+                            backgroundColor: labels.map(l => modelColors[l]),
+                            borderColor: labels.map(l => modelBorders[l]),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => formatCurrency(context.raw, currency)
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: (value) => formatCurrency(value, currency)
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // 2. Stacked Breakdown Bar Chart
+                const breakdownLabels = {
+                    depreciation: 'Depreciation',
+                    interest: 'Loan Interest',
+                    energy: 'Fuel / Energy',
+                    opex: 'Other OPEX',
+                    fees: 'Fees (Reg, Charger)',
+                    overage: 'Overage Fees',
+                    taxi: 'Ride-Sharing',
+                    rental: 'Short-Term Rentals'
+                };
+                
+                const allKeys = new Set();
+                results.forEach(r => Object.keys(r.breakdown).forEach(k => allKeys.add(k)));
+                
+                const breakdownDatasets = Array.from(allKeys).map(key => {
+                    return {
+                        label: breakdownLabels[key] || key,
+                        data: results.map(r => r.breakdown[key] || 0),
+                        // Assign colors based on category
+                        backgroundColor: getBreakdownColor(key), 
+                    };
+                });
+                
+                if (breakdownChart) breakdownChart.destroy();
+                breakdownChart = new Chart(ctxBreakdown, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: breakdownDatasets
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: { stacked: true },
+                            y: { 
+                                stacked: true,
+                                ticks: {
+                                    callback: (value) => formatCurrency(value, currency)
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => ${context.dataset.label}: ${formatCurrency(context.raw, currency)}
+                                }
+                            }
+                        }
+                    }
+                });
             }
-
-            function formatCurrency(value) {
-                return new Intl.NumberFormat('en-AE', { 
-                    style: 'currency', 
-                    currency: 'AED',
-                    maximumFractionDigits: 0,
-                    minimumFractionDigits: 0,
-                }).format(value);
+            
+            function getBreakdownColor(key) {
+                const colors = {
+                    depreciation: 'rgba(239, 68, 68, 0.7)',  // red
+                    interest: 'rgba(249, 115, 22, 0.7)',   // orange
+                    energy: 'rgba(234, 179, 8, 0.7)',     // yellow
+                    opex: 'rgba(59, 130, 246, 0.7)',      // blue
+                    fees: 'rgba(107, 114, 128, 0.7)',   // gray
+                    overage: 'rgba(249, 115, 22, 0.7)',   // orange
+                    taxi: 'rgba(99, 102, 241, 0.7)',      // indigo
+                    rental: 'rgba(20, 184, 166, 0.7)',    // teal
+                };
+                return colors[key] || 'rgba(156, 163, 175, 0.7)';
             }
 
         });
